@@ -1,0 +1,5 @@
+aws_region      = "eu-north-1"
+project_name    = "op-demo"
+my_ip_cidr      = "1.2.3.4/32"
+instance_type   = "t3.micro"
+public_key_path = "~/.ssh/id_rsa.pub"
