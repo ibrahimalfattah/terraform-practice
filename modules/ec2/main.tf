@@ -99,14 +99,7 @@ resource "aws_instance" "this" {
   key_name               = aws_key_pair.this.key_name     # enables SSH login
 
   # Bootstrap script executed on first boot by cloud-init
-  user_data = <<-EOF
-              #!/bin/bash
-              dnf update -y
-              dnf install -y nginx
-              systemctl enable nginx
-              systemctl start nginx
-              echo "<h1>${var.project_name} demo is running</h1>" > /usr/share/nginx/html/index.html
-              EOF
+  user_data = var.user_data
 
   tags = {
     Name = "${var.project_name}-ec2"

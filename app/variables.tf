@@ -36,18 +36,40 @@ variable "project_name" {
 
 
 # -----------------------------------------------------------------------------
-# my_ip_cidr
+# ingress_rules
 # -----------------------------------------------------------------------------
-# Your current public IP address in CIDR notation, used to lock down SSH
-# access so only your machine can reach port 22 on the EC2 instance.
-# Tip: run `curl -s ifconfig.me` and append /32, e.g. "1.2.3.4/32".
-# Using /32 means exactly one IP; never use 0.0.0.0/0 here in production.
+# A list of objects defining ingress rules for the application.
 # -----------------------------------------------------------------------------
-variable "my_ip_cidr" {
-  type        = string
-  description = "Your public IP in CIDR format for SSH access, e.g. 1.2.3.4/32"
+variable "ingress_rules" {
+  type = list(object({
+    description     = string
+    from_port       = number
+    to_port         = number
+    protocol        = string
+    cidr_blocks     = optional(list(string))
+    security_groups = optional(list(string))
+  }))
+  description = "List of dynamic ingress rules to apply"
+  default     = []
 }
 
+# -----------------------------------------------------------------------------
+# egress_rules
+# -----------------------------------------------------------------------------
+# A list of objects defining egress rules for the application.
+# -----------------------------------------------------------------------------
+variable "egress_rules" {
+  type = list(object({
+    description     = string
+    from_port       = number
+    to_port         = number
+    protocol        = string
+    cidr_blocks     = optional(list(string))
+    security_groups = optional(list(string))
+  }))
+  description = "List of dynamic egress rules to apply"
+  default     = []
+}
 
 # -----------------------------------------------------------------------------
 # instance_type
@@ -76,4 +98,15 @@ variable "instance_type" {
 variable "public_key_path" {
   type        = string
   description = "Path to your SSH public key, e.g. ~/.ssh/id_rsa.pub"
+}
+
+
+# -----------------------------------------------------------------------------
+# user_data
+# -----------------------------------------------------------------------------
+# The bootstrap script to run on EC2 startup.
+# -----------------------------------------------------------------------------
+variable "user_data" {
+  type        = string
+  description = "The bootstrap script to run on EC2 startup"
 }

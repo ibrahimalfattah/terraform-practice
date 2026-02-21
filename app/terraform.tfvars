@@ -21,10 +21,34 @@ aws_region = "eu-north-1"
 # Makes it easy to identify all project resources in the AWS Console.
 project_name = "op-demo"
 
-# YOUR public IP address in /32 CIDR notation.
-# Restricts SSH (port 22) to only this IP — never use 0.0.0.0/0 here.
-# Update this with your real IP: curl -s ifconfig.me
-my_ip_cidr = "1.2.3.4/32"
+# Dynamic Ingress Rules for the Application
+ingress_rules = [
+  {
+    description = "SSH from my IP"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["176.29.57.230/32"] # Update this with your real IP
+  },
+  {
+    description = "HTTP for quick test"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+]
+
+# Dynamic Egress Rules for the Application
+egress_rules = [
+  {
+    description = "All outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+]
 
 # EC2 instance size.  t3.micro is AWS Free-Tier eligible (750 hrs/month).
 # Change to a larger type (e.g. t3.small) for heavier workloads.
@@ -32,4 +56,13 @@ instance_type = "t3.micro"
 
 # Path to the local SSH *public* key that will be uploaded to AWS.
 # The matching private key (~/.ssh/id_rsa) is used to SSH into the instance.
-public_key_path = "~/.ssh/id_rsa.pub"
+public_key_path = "~/.ssh/id_ed25519.pub"
+
+user_data = <<-EOF
+#!/bin/bash
+dnf update -y
+dnf install -y nginx docker
+systemctl enable nginx docker
+systemctl start nginx docker
+usermod -aG docker ec2-user
+EOF

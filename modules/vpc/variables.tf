@@ -61,3 +61,37 @@ variable "public_subnet_cidrs" {
 variable "private_subnet_cidrs" {
   type = list(string)
 }
+
+
+variable "enable_dns_support"{
+  type = bool
+  default = true
+  description = "Whether to enable DNS support in the VPC"
+
+}
+
+variable "enable_dns_hostnames"{
+  type = bool
+  default = true
+  description = "Whether to enable DNS hostnames for instances launched in public subnets"
+
+}
+
+variable map_public_ip_on_launch{
+  type = bool 
+  default = true 
+  description = "Whether to assign public IP addresses to instances launched in public subnets"
+}
+
+
+variable "destination_cidr_block"{
+  type= string
+  default = "0.0.0.0/0" 
+  description = "The destination CIDR block for the route"
+}
+
+variable "nat_gateway_enabled"{
+  type = bool
+  default = false
+  description = "Whether to enable NAT Gateway"
+}

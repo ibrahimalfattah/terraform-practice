@@ -37,15 +37,19 @@ output "public_subnet_ids" {
 
 
 # -----------------------------------------------------------------------------
-# instance_public_ip
+# public_instance_public_ip
 # -----------------------------------------------------------------------------
-# The public IPv4 address assigned to the EC2 instance.
-# Available only because the instance sits in a PUBLIC subnet with
-# `map_public_ip_on_launch = true`.
-# Use this IP to:
-#   • SSH into the server:  ssh -i ~/.ssh/id_rsa ec2-user@<ip>
-#   • Open Nginx in a browser: http://<ip>
+# The public IPv4 address assigned to the public EC2 instance.
 # -----------------------------------------------------------------------------
-output "instance_public_ip" {
-  value = module.ec2.public_ip # sourced from modules/ec2/outputs.tf → aws_instance.this.public_ip
+output "public_instance_public_ip" {
+  value = module.public_ec2.public_ip
+}
+
+# -----------------------------------------------------------------------------
+# private_instance_private_ip
+# -----------------------------------------------------------------------------
+# The private IPv4 address assigned to the private EC2 instance.
+# -----------------------------------------------------------------------------
+output "private_instance_private_ip" {
+  value = module.private_ec2.private_ip
 }

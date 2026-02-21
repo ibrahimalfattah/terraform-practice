@@ -53,8 +53,8 @@ data "aws_availability_zones" "available" {
 # -----------------------------------------------------------------------------
 resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
-  enable_dns_support   = true  # allows AWS DNS resolver inside the VPC
-  enable_dns_hostnames = true  # gives public instances DNS hostnames
+  enable_dns_support   = var.enable_dns_support  # allows AWS DNS resolver inside the VPC
+  enable_dns_hostnames = var.enable_dns_hostnames  # gives public instances DNS hostnames
 
   tags = {
     Name = "${var.project_name}-vpc"
@@ -103,7 +103,7 @@ resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.this.id
   cidr_block              = var.public_subnet_cidrs[count.index]        # "10.10.1.0/24", then "10.10.2.0/24"
   availability_zone       = data.aws_availability_zones.available.names[count.index] # spread across AZs
-  map_public_ip_on_launch = true # EC2 instances here get a public IP automatically
+  map_public_ip_on_launch = var.map_public_ip_on_launch # EC2 instances here get a public IP automatically
 
   tags = {
     Name = "${var.project_name}-public-${count.index + 1}" # e.g. "op-demo-public-1"
@@ -128,7 +128,6 @@ resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.this.id
   cidr_block        = var.private_subnet_cidrs[count.index]
   availability_zone = data.aws_availability_zones.available.names[count.index]
-  # Note: map_public_ip_on_launch is NOT set (defaults to false) — private!
 
   tags = {
     Name = "${var.project_name}-private-${count.index + 1}" # e.g. "op-demo-private-1"
@@ -166,7 +165,7 @@ resource "aws_route_table" "public" {
 # -----------------------------------------------------------------------------
 resource "aws_route" "public_internet" {
   route_table_id         = aws_route_table.public.id
-  destination_cidr_block = "0.0.0.0/0"          # catch-all: send to internet
+  destination_cidr_block = var.destination_cidr_block          # catch-all: send to internet
   gateway_id             = aws_internet_gateway.this.id
 }
 

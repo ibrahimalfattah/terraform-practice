@@ -41,11 +41,11 @@ module "vpc" {
   vpc_cidr = "10.10.0.0/16"
 
   # Two public subnets spread across AZs for high-availability
-  public_subnet_cidrs  = ["10.10.1.0/24", "10.10.2.0/24"]
+  public_subnet_cidrs  = ["10.10.1.0/24"]
 
   # Two private subnets (no direct internet access) for future use
   # (e.g. RDS, internal services)
-  private_subnet_cidrs = ["10.10.11.0/24", "10.10.12.0/24"]
+  private_subnet_cidrs = ["10.10.11.0/24"]
 }
 
 
@@ -67,49 +67,75 @@ module "vpc" {
 # Outputs consumed here
 #   module.sg.security_group_id → passed into the ec2 module
 # -----------------------------------------------------------------------------
-module "sg" {
+# -----------------------------------------------------------------------------
+# Module: public_sg (Security Group for Public EC2)
+# -----------------------------------------------------------------------------
+module "public_sg" {
   source       = "../modules/security_group"
-  project_name = var.project_name
+  project_name = "${var.project_name}-public"
+  vpc_id       = module.vpc.vpc_id
 
-  # vpc_id is taken directly from the vpc module output – no hard-coding needed
-  vpc_id = module.vpc.vpc_id
-
-  # Restricts SSH access to only the caller's IP address for security
-  ssh_ingress_cidr = var.my_ip_cidr
+  ingress_rules = var.ingress_rules
+  egress_rules  = var.egress_rules
 }
 
+# -----------------------------------------------------------------------------
+# Module: private_sg (Security Group for Private EC2)
+# -----------------------------------------------------------------------------
+module "private_sg" {
+  source       = "../modules/security_group"
+  project_name = "${var.project_name}-private"
+  vpc_id       = module.vpc.vpc_id
+
+  # Ingress from Public SG only
+  ingress_rules = [
+    {
+      description     = "Allow all from Public EC2 SG"
+      from_port       = 0
+      to_port         = 0
+      protocol        = "-1"
+      security_groups = [module.public_sg.security_group_id]
+    }
+  ]
+
+  # Egress to Public SG only
+  egress_rules = [
+    {
+      description     = "Allow all to Public EC2 SG"
+      from_port       = 0
+      to_port         = 0
+      protocol        = "-1"
+      security_groups = [module.public_sg.security_group_id]
+    }
+  ]
+}
 
 # -----------------------------------------------------------------------------
-# Module: ec2
-# Source: ../modules/ec2
+# Module: public_ec2
 # -----------------------------------------------------------------------------
-# Launches a single EC2 instance pre-configured with Nginx:
-#   • Looks up the latest Amazon Linux 2023 AMI automatically (data source)
-#   • Uploads your local SSH public key as an EC2 Key Pair
-#   • Runs a user-data script on first boot to install & start Nginx
-#
-# Inputs
-#   project_name       – Name-tag prefix
-#   subnet_id          – the first public subnet from the vpc module
-#                        (public_subnet_ids[0]) so the instance gets a public IP
-#   security_group_ids – list containing the SG created by the sg module;
-#                        wrapping in a list lets the module accept multiple SGs
-#   instance_type      – EC2 family/size (default: t3.micro, set in tfvars)
-#   public_key_path    – local filesystem path to your .pub SSH key
-#
-# Outputs consumed here
-#   module.ec2.public_ip → exposed as a root-level output (see outputs.tf)
-# -----------------------------------------------------------------------------
-module "ec2" {
+module "public_ec2" {
   source       = "../modules/ec2"
-  project_name = var.project_name
+  project_name = "${var.project_name}-public"
+  subnet_id    = module.vpc.public_subnet_ids[0]
 
-  # Place the instance into the first public subnet so it receives a public IP
-  subnet_id = module.vpc.public_subnet_ids[0]
-
-  # Wrap in a list because the EC2 resource accepts a list of SG IDs
-  security_group_ids = [module.sg.security_group_id]
+  security_group_ids = [module.public_sg.security_group_id]
 
   instance_type   = var.instance_type
   public_key_path = var.public_key_path
+  user_data       = var.user_data
+}
+
+# -----------------------------------------------------------------------------
+# Module: private_ec2
+# -----------------------------------------------------------------------------
+module "private_ec2" {
+  source       = "../modules/ec2"
+  project_name = "${var.project_name}-private"
+  subnet_id    = module.vpc.private_subnet_ids[0]
+
+  security_group_ids = [module.private_sg.security_group_id]
+
+  instance_type   = var.instance_type
+  public_key_path = var.public_key_path
+  user_data       = "#!/bin/bash\necho 'Private Instance'"
 }

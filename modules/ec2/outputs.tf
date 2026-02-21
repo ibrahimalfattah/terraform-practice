@@ -26,3 +26,10 @@
 output "public_ip" {
   value = aws_instance.this.public_ip
 }
+
+# -----------------------------------------------------------------------------
+# private_ip
+# -----------------------------------------------------------------------------
+output "private_ip" {
+  value = aws_instance.this.private_ip
+}

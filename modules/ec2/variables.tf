@@ -68,3 +68,14 @@ variable "public_key_path" {
   type        = string
   description = "Path to SSH public key"
 }
+
+
+# -----------------------------------------------------------------------------
+# user_data
+# -----------------------------------------------------------------------------
+# The bootstrap script executed on first boot by cloud-init.
+# -----------------------------------------------------------------------------
+variable "user_data" {
+  type        = string
+  description = "The bootstrap script to run on EC2 startup"
+}

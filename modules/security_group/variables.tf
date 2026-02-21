@@ -25,16 +25,37 @@ variable "vpc_id" { type = string }
 
 
 # -----------------------------------------------------------------------------
-# ssh_ingress_cidr
+# ingress_rules
 # -----------------------------------------------------------------------------
-# The CIDR block that is allowed to reach port 22 (SSH) on the EC2 instance.
-# Best practice: use your exact public IP with a /32 mask (single host).
-# Example: "1.2.3.4/32"
-#
-# NEVER set this to "0.0.0.0/0" in a real environment — bots scan port 22
-# continuously and will attempt to brute-force login.
+# A list of objects defining ingress rules for the security group.
 # -----------------------------------------------------------------------------
-variable "ssh_ingress_cidr" {
-  type        = string
-  description = "CIDR allowed to SSH"
+variable "ingress_rules" {
+  type = list(object({
+    description     = string
+    from_port       = number
+    to_port         = number
+    protocol        = string
+    cidr_blocks     = optional(list(string))
+    security_groups = optional(list(string))
+  }))
+  description = "List of ingress rules"
+  default     = []
+}
+
+# -----------------------------------------------------------------------------
+# egress_rules
+# -----------------------------------------------------------------------------
+# A list of objects defining egress rules for the security group.
+# -----------------------------------------------------------------------------
+variable "egress_rules" {
+  type = list(object({
+    description     = string
+    from_port       = number
+    to_port         = number
+    protocol        = string
+    cidr_blocks     = optional(list(string))
+    security_groups = optional(list(string))
+  }))
+  description = "List of egress rules"
+  default     = []
 }
