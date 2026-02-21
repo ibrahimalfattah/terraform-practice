@@ -1,0 +1,19 @@
+variable "project_name" { type = string }
+variable "vpc_id" { type = string }
+variable "public_subnet_ids" { type = list(string) }
+variable "alb_sg_id" { type = string }
+
+variable "load_balancer_type" { type = string }
+variable "internal" { type = bool }
+variable "tg_port" { type = number }
+variable "tg_protocol" { type = string }
+variable "hc_enabled" { type = bool }
+variable "hc_path" { type = string }
+variable "hc_matcher" { type = string }
+variable "hc_interval" { type = number }
+variable "hc_timeout" { type = number }
+variable "hc_healthy_threshold" { type = number }
+variable "hc_unhealthy_threshold" { type = number }
+variable "listener_port" { type = number }
+variable "listener_protocol" { type = string }
+variable "listener_type" { type = string }
