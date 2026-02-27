@@ -1,0 +1,40 @@
+aws_region = "us-east-1"
+
+project_name = "demo-app"
+
+vpc_cidr = "10.0.0.0/16"
+
+public_subnet_cidrs = [
+  "10.0.1.0/24",
+  "10.0.2.0/24",
+]
+
+private_subnet_cidrs = [
+  "10.0.11.0/24",
+  "10.0.12.0/24",
+]
+
+cluster_version      = "1.30"
+node_instance_types  = ["t3.medium"]
+node_desired_size    = 2
+node_min_size        = 1
+node_max_size        = 4
+
+db_name          = "appdb"
+db_username      = "appuser"
+db_instance_class = "db.t3.micro"
+
+frontend_container_port = 3000
+backend_container_port  = 8080
+
+backend_health_path = "/healthz"
+
+frontend_image_tag = "latest"
+backend_image_tag  = "latest"
+
+enable_tls = true
+
+app_domain = "app.example.com"
+
+acme_email = "you@example.com"
+
